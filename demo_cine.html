@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Cine - Demo de Reproducción</title>
+    <style>
+        /* Estilos básicos para la demo, puedes usar tus estilos.css */
+        body {
+            font-family: sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            color: #00ff99; /* Un color distintivo */
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        #reproductor {
+            width: 100%;
+            height: auto;
+            border: 2px solid #00ff99;
+            margin-bottom: 20px;
+            background-color: #000000;
+        }
+        .catalogo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .pelicula-card {
+            background-color: #1f1f1f;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-left: 5px solid transparent;
+        }
+        .pelicula-card:hover {
+            background-color: #2c2c2c;
+            border-left: 5px solid #00ff99;
+        }
+        .pelicula-card h3 {
+            margin-top: 0;
+            font-size: 1.1em;
+            color: #ffffff;
+        }
+        .pelicula-card p {
+            font-size: 0.9em;
+            color: #aaaaaa;
+        }
+        .premium-tag {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Sala de Cine - Prueba Rápida</h1>
+
+        <video id="reproductor" controls poster="https://placehold.co/800x450/111111/FFFFFF?text=Selecciona+una+película"></video>
+        
+        <p style="text-align: center; color: #aaaaaa;">
+            *Si tienes problemas con HLS (.m3u8), puede que necesites una librería JS (como hls.js) o usar un reproductor nativo de tu app Android.
+        </p>
+
+        <h2>Catálogo de Películas (Ejemplo Legal)</h2>
+
+        <div class="catalogo" id="catalogo-peliculas">
+            </div>
+    </div>
+
+    <script>
+        // LÓGICA DE JAVASCRIPT (SIMULANDO TU CEREBRO API)
+
+        // Enlaces de prueba legales (MP4 y HLS)
+        const CATALOGO_DEMO = [
+            {
+                titulo: "Corto de Blender: Big Buck Bunny (MP4)",
+                descripcion: "Video de código abierto, alta calidad (MP4). Origen: Manual (Simulado)",
+                es_premium: false,
+                url_streaming: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            },
+            {
+                titulo: "Video de Muestra (HLS Stream)",
+                descripcion: "Formato HLS (.m3u8). Origen: Repositorio Server (Simulado)",
+                es_premium: true,
+                url_streaming: "https://bitmovin-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
+            },
+            {
+                titulo: "Documental de Naturaleza (MP4)",
+                descripcion: "Video MP4. Dominio público. Origen: Manual (Simulado)",
+                es_premium: false,
+                url_streaming: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+            },
+            {
+                titulo: "Canal Live de Prueba (HLS)",
+                descripcion: "Stream en vivo simulado (.m3u8). Origen: Repositorio Server (Simulado)",
+                es_premium: true,
+                url_streaming: "https://demo.unified-streaming.com/k8s/features/stable/video/cenc/tears-of-steel/tears-of-steel-hls.m3u8"
+            }
+        ];
+
+        // ⚠️ ESTADO DEL USUARIO (PRUEBA LA LÓGICA PREMIUM)
+        const usuarioEsPremium = true; // CAMBIA a 'false' para probar el bloqueo
+        
+        const reproductor = document.getElementById('reproductor');
+        const catalogoDiv = document.getElementById('catalogo-peliculas');
+
+        /**
+         * Función principal que implementa la lógica de acceso y reproduce el video.
+         */
+        function intentarReproducir(contenido) {
+            
+            // Lógica de acceso Premium vs. Gratis
+            if (contenido.es_premium && !usuarioEsPremium) {
+                // Bloqueo
+                alert(`❌ ACCESO DENEGADO: La película "${contenido.titulo}" es exclusiva para usuarios PREMIUM.`);
+                reproductor.src = ""; // Detiene la reproducción si hay algo cargado
+                reproductor.poster = "https://placehold.co/800x450/cc0000/FFFFFF?text=CONTENIDO+PREMIUM";
+                return;
+            }
+
+            // Si el usuario tiene acceso (es gratis O es premium y el usuario paga)
+            
+            // Lógica de carga del reproductor
+            reproductor.poster = ""; // Quita el póster de placeholder
+            reproductor.src = contenido.url_streaming;
+            reproductor.play().catch(error => {
+                console.error("Error al intentar reproducir:", error);
+                alert(`Error al reproducir el video. URL: ${contenido.url_streaming}. Si es HLS, es posible que el navegador necesite una librería adicional.`);
+            });
+            
+            console.log(`▶️ Reproduciendo: ${contenido.titulo} | Origen: ${contenido.descripcion}`);
+        }
+        
+        // Función para renderizar el catálogo
+        CATALOGO_DEMO.forEach(contenido => {
+            const card = document.createElement('div');
+            card.className = 'pelicula-card';
+            
+            let premiumInfo = '';
+            if (contenido.es_premium) {
+                premiumInfo = '<span class="premium-tag">PREMIUM</span>';
+                card.style.borderColor = '#ffcc00';
+            }
+
+            card.innerHTML = `
+                <h3>${contenido.titulo}</h3>
+                <p>${contenido.descripcion}</p>
+                <p>${premiumInfo}</p>
+            `;
+            
+            // Asigna la función de reproducción al hacer clic
+            card.onclick = () => intentarReproducir(contenido);
+            
+            catalogoDiv.appendChild(card);
+        });
+        
+    </script>
+</body>
+</html>
