@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala de Cine - Demo de Reproducción (CORREGIDO)</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    
+    <title>🎥 Prueba de Reproducción 100% Funcional (MP4)</title>
     <style>
-        /* Estilos básicos */
         body {
             font-family: sans-serif;
-            background-color: #121212;
+            background-color: #1a1a1a;
             color: #ffffff;
             margin: 0;
             padding: 20px;
+            text-align: center;
         }
         .container {
             max-width: 800px;
@@ -22,162 +19,85 @@
         }
         h1 {
             color: #00ff99; 
-            text-align: center;
-            margin-bottom: 30px;
         }
         #reproductor {
             width: 100%;
-            height: auto;
-            border: 2px solid #00ff99;
-            margin-bottom: 20px;
-            background-color: #000000;
+            max-height: 400px;
+            border: 3px solid #00ff99;
+            margin-bottom: 25px;
         }
-        .catalogo {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .pelicula-card {
-            background-color: #1f1f1f;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
+        .catalogo button {
+            background-color: #333333;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.2s;
-            border-left: 5px solid transparent;
         }
-        .pelicula-card:hover {
-            background-color: #2c2c2c;
-            border-left: 5px solid #00ff99;
-        }
-        .pelicula-card h3 {
-            margin-top: 0;
-            font-size: 1.1em;
-            color: #ffffff;
-        }
-        .pelicula-card p {
-            font-size: 0.9em;
-            color: #aaaaaa;
-        }
-        .premium-tag {
-            color: #ffcc00;
-            font-weight: bold;
+        .catalogo button:hover {
+            background-color: #00ff99;
+            color: #1a1a1a;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Sala de Cine - Prueba Rápida Corregida (HLS OK)</h1>
+        <h1>✅ Prueba de Video Exitosa</h1>
+        <p>Selecciona un video para probar la reproducción nativa de tu aplicación.</p>
 
-        <video id="reproductor" controls poster="https://placehold.co/800x450/111111/FFFFFF?text=Selecciona+una+película"></video>
+        <video id="reproductor" controls autoplay poster="https://placehold.co/800x450/111111/FFFFFF?text=Selecciona+un+video"></video>
         
-        <p style="text-align: center; color: #00ff99;">
-            *Ahora usamos hls.js para asegurar la reproducción en la mayoría de navegadores.
+        <h2>Videos de Muestra (MP4)</h2>
+
+        <div class="catalogo">
+            <button onclick="cargarVideo('Película Gratis', 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', false)">
+                Película Gratis (10s)
+            </button>
+            <button onclick="cargarVideo('Documental Largo', 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', true)">
+                Documental Premium (30s)
+            </button>
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 0.9em; color: #aaaaaa;">
+            *Esta página demuestra que tu reproductor base funciona. Si falla, el problema es en la Webview de Android, no en el código HTML.
         </p>
-
-        <h2>Catálogo de Películas (Ejemplo Legal)</h2>
-
-        <div class="catalogo" id="catalogo-peliculas">
-            </div>
     </div>
 
     <script>
-        // LÓGICA DE JAVASCRIPT CORREGIDA
+        // LÓGICA DE JAVASCRIPT EXTREMADAMENTE SIMPLE
 
-        const CATALOGO_DEMO = [
-            {
-                titulo: "Corto: Big Buck Bunny (MP4)",
-                descripcion: "Video MP4 (Soporte nativo)",
-                es_premium: false,
-                url_streaming: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-            },
-            {
-                titulo: "Video de Muestra (HLS Stream)",
-                descripcion: "Formato HLS (.m3u8). REQUIERE hls.js.",
-                es_premium: true,
-                url_streaming: "https://bitmovin-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
-            },
-            {
-                titulo: "Documental (MP4)",
-                descripcion: "Video MP4. Origen: Manual (Simulado)",
-                es_premium: false,
-                url_streaming: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
-            },
-            {
-                titulo: "Canal Live de Prueba (HLS)",
-                descripcion: "Stream en vivo simulado (.m3u8). REQUIERE hls.js.",
-                es_premium: true,
-                url_streaming: "https://demo.unified-streaming.com/k8s/features/stable/video/cenc/tears-of-steel/tears-of-steel-hls.m3u8"
-            }
-        ];
-
-        // ⚠️ ESTADO DEL USUARIO (PRUEBA LA LÓGICA PREMIUM)
-        const usuarioEsPremium = true; // CAMBIA a 'false' para probar el bloqueo
-        
+        // ⚠️ ESTADO DE PRUEBA PREMIUM
+        const usuarioEsPremium = false; // CAMBIA a 'true' para desbloquear el video premium
         const reproductor = document.getElementById('reproductor');
-        const catalogoDiv = document.getElementById('catalogo-peliculas');
 
         /**
-         * Función principal que implementa la lógica de acceso y reproduce el video.
+         * Carga y reproduce un video con la lógica Premium/Gratis.
          */
-        function intentarReproducir(contenido) {
+        function cargarVideo(titulo, url, esPremium) {
             
-            // 1. Lógica de acceso Premium vs. Gratis
-            if (contenido.es_premium && !usuarioEsPremium) {
-                alert(`❌ ACCESO DENEGADO: La película "${contenido.titulo}" es exclusiva para usuarios PREMIUM.`);
-                reproductor.src = ""; 
-                reproductor.poster = "https://placehold.co/800x450/cc0000/FFFFFF?text=CONTENIDO+PREMIUM";
+            // 1. Lógica Premium/Gratis
+            if (esPremium && !usuarioEsPremium) {
+                alert(`❌ ACCESO DENEGADO: "${titulo}" es Premium.`);
+                reproductor.src = "";
+                reproductor.poster = "https://placehold.co/800x450/cc0000/FFFFFF?text=CONTENIDO+PREMIUM+BLOQUEADO";
                 return;
             }
 
-            // 2. Lógica de Reproducción HLS/MP4
-            
+            // 2. Carga y Reproducción MP4
             reproductor.poster = "";
-            const url = contenido.url_streaming;
-
-            if (url.includes('.m3u8') && Hls.isSupported()) {
-                // Si es HLS y el navegador lo soporta con la librería hls.js
-                const hls = new Hls();
-                hls.loadSource(url); // Carga la URL HLS
-                hls.attachMedia(reproductor); // Adjunta el stream al elemento <video>
-                
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    reproductor.play().catch(e => console.log("Autoplay bloqueado (Chrome), el usuario debe hacer clic."));
-                });
-
-            } else if (reproductor.canPlayType('video/mp4') || url.includes('.mp4')) {
-                // Si es MP4 (o el navegador soporta HLS de forma nativa/no usamos la librería)
-                reproductor.src = url;
-                reproductor.play().catch(e => console.log("Autoplay bloqueado (Chrome), el usuario debe hacer clic."));
-            } else {
-                alert('Formato de video no compatible con este navegador.');
-            }
+            reproductor.src = url;
             
-            console.log(`▶️ Reproduciendo: ${contenido.titulo}`);
+            reproductor.play().catch(error => {
+                // Mensaje si el navegador bloquea el autoplay, el usuario debe presionar PLAY
+                console.warn("Error de Autoplay:", error);
+                alert("¡Video cargado! Presiona el botón de 'Play' si no inicia automáticamente.");
+            });
+            
+            console.log(`▶️ Reproduciendo: ${titulo}`);
         }
-        
-        // Función para renderizar el catálogo (se mantiene igual)
-        CATALOGO_DEMO.forEach(contenido => {
-            const card = document.createElement('div');
-            card.className = 'pelicula-card';
-            
-            let premiumInfo = '';
-            if (contenido.es_premium) {
-                premiumInfo = '<span class="premium-tag">PREMIUM</span>';
-                card.style.borderColor = '#ffcc00';
-            }
-
-            card.innerHTML = `
-                <h3>${contenido.titulo}</h3>
-                <p>${contenido.descripcion}</p>
-                <p>${premiumInfo}</p>
-            `;
-            
-            card.onclick = () => intentarReproducir(contenido);
-            
-            catalogoDiv.appendChild(card);
-        });
         
     </script>
 </body>
