@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala de Cine - Demo de Reproducción</title>
+    <title>Sala de Cine - Demo de Reproducción (CORREGIDO)</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
     <style>
-        /* Estilos básicos para la demo, puedes usar tus estilos.css */
+        /* Estilos básicos */
         body {
             font-family: sans-serif;
             background-color: #121212;
@@ -18,7 +21,7 @@
             margin: auto;
         }
         h1 {
-            color: #00ff99; /* Un color distintivo */
+            color: #00ff99; 
             text-align: center;
             margin-bottom: 30px;
         }
@@ -65,12 +68,12 @@
 <body>
 
     <div class="container">
-        <h1>Sala de Cine - Prueba Rápida</h1>
+        <h1>Sala de Cine - Prueba Rápida Corregida (HLS OK)</h1>
 
         <video id="reproductor" controls poster="https://placehold.co/800x450/111111/FFFFFF?text=Selecciona+una+película"></video>
         
-        <p style="text-align: center; color: #aaaaaa;">
-            *Si tienes problemas con HLS (.m3u8), puede que necesites una librería JS (como hls.js) o usar un reproductor nativo de tu app Android.
+        <p style="text-align: center; color: #00ff99;">
+            *Ahora usamos hls.js para asegurar la reproducción en la mayoría de navegadores.
         </p>
 
         <h2>Catálogo de Películas (Ejemplo Legal)</h2>
@@ -80,31 +83,30 @@
     </div>
 
     <script>
-        // LÓGICA DE JAVASCRIPT (SIMULANDO TU CEREBRO API)
+        // LÓGICA DE JAVASCRIPT CORREGIDA
 
-        // Enlaces de prueba legales (MP4 y HLS)
         const CATALOGO_DEMO = [
             {
-                titulo: "Corto de Blender: Big Buck Bunny (MP4)",
-                descripcion: "Video de código abierto, alta calidad (MP4). Origen: Manual (Simulado)",
+                titulo: "Corto: Big Buck Bunny (MP4)",
+                descripcion: "Video MP4 (Soporte nativo)",
                 es_premium: false,
                 url_streaming: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
             },
             {
                 titulo: "Video de Muestra (HLS Stream)",
-                descripcion: "Formato HLS (.m3u8). Origen: Repositorio Server (Simulado)",
+                descripcion: "Formato HLS (.m3u8). REQUIERE hls.js.",
                 es_premium: true,
                 url_streaming: "https://bitmovin-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
             },
             {
-                titulo: "Documental de Naturaleza (MP4)",
-                descripcion: "Video MP4. Dominio público. Origen: Manual (Simulado)",
+                titulo: "Documental (MP4)",
+                descripcion: "Video MP4. Origen: Manual (Simulado)",
                 es_premium: false,
                 url_streaming: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
             },
             {
                 titulo: "Canal Live de Prueba (HLS)",
-                descripcion: "Stream en vivo simulado (.m3u8). Origen: Repositorio Server (Simulado)",
+                descripcion: "Stream en vivo simulado (.m3u8). REQUIERE hls.js.",
                 es_premium: true,
                 url_streaming: "https://demo.unified-streaming.com/k8s/features/stable/video/cenc/tears-of-steel/tears-of-steel-hls.m3u8"
             }
@@ -121,29 +123,41 @@
          */
         function intentarReproducir(contenido) {
             
-            // Lógica de acceso Premium vs. Gratis
+            // 1. Lógica de acceso Premium vs. Gratis
             if (contenido.es_premium && !usuarioEsPremium) {
-                // Bloqueo
                 alert(`❌ ACCESO DENEGADO: La película "${contenido.titulo}" es exclusiva para usuarios PREMIUM.`);
-                reproductor.src = ""; // Detiene la reproducción si hay algo cargado
+                reproductor.src = ""; 
                 reproductor.poster = "https://placehold.co/800x450/cc0000/FFFFFF?text=CONTENIDO+PREMIUM";
                 return;
             }
 
-            // Si el usuario tiene acceso (es gratis O es premium y el usuario paga)
+            // 2. Lógica de Reproducción HLS/MP4
             
-            // Lógica de carga del reproductor
-            reproductor.poster = ""; // Quita el póster de placeholder
-            reproductor.src = contenido.url_streaming;
-            reproductor.play().catch(error => {
-                console.error("Error al intentar reproducir:", error);
-                alert(`Error al reproducir el video. URL: ${contenido.url_streaming}. Si es HLS, es posible que el navegador necesite una librería adicional.`);
-            });
+            reproductor.poster = "";
+            const url = contenido.url_streaming;
+
+            if (url.includes('.m3u8') && Hls.isSupported()) {
+                // Si es HLS y el navegador lo soporta con la librería hls.js
+                const hls = new Hls();
+                hls.loadSource(url); // Carga la URL HLS
+                hls.attachMedia(reproductor); // Adjunta el stream al elemento <video>
+                
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    reproductor.play().catch(e => console.log("Autoplay bloqueado (Chrome), el usuario debe hacer clic."));
+                });
+
+            } else if (reproductor.canPlayType('video/mp4') || url.includes('.mp4')) {
+                // Si es MP4 (o el navegador soporta HLS de forma nativa/no usamos la librería)
+                reproductor.src = url;
+                reproductor.play().catch(e => console.log("Autoplay bloqueado (Chrome), el usuario debe hacer clic."));
+            } else {
+                alert('Formato de video no compatible con este navegador.');
+            }
             
-            console.log(`▶️ Reproduciendo: ${contenido.titulo} | Origen: ${contenido.descripcion}`);
+            console.log(`▶️ Reproduciendo: ${contenido.titulo}`);
         }
         
-        // Función para renderizar el catálogo
+        // Función para renderizar el catálogo (se mantiene igual)
         CATALOGO_DEMO.forEach(contenido => {
             const card = document.createElement('div');
             card.className = 'pelicula-card';
@@ -160,7 +174,6 @@
                 <p>${premiumInfo}</p>
             `;
             
-            // Asigna la función de reproducción al hacer clic
             card.onclick = () => intentarReproducir(contenido);
             
             catalogoDiv.appendChild(card);
